@@ -1,0 +1,12 @@
+/.idea
+.idea/
+target/
+tmp/
+.DS_Store
+derby.log
+metastore_db/
+*.iml
+log/
+logs/
+out/
+spark-warehouse/
