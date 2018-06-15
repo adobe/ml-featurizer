@@ -105,3 +105,7 @@ object FeaturePipeline {
 #### References:
 * [An Empirical Analysis of Feature Engineering for
  Predictive Modeling](https://arxiv.org/pdf/1701.07852.pdf)      
+
+### Contributing
+
+If you're interested in contributing to this project, check out our [contribution guidelines](CONTRIBUTING.md)!
