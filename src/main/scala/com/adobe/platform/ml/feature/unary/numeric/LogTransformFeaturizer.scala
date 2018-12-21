@@ -20,7 +20,7 @@ import com.adobe.platform.ml.feature.util.{HasInputCol, HasOutputCol}
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.{Param, ParamMap, Params}
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
-import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Dataset, functions}
 
@@ -58,15 +58,18 @@ class LogTransformFeaturizer(override val uid: String)
     val schema = dataset.schema
     val inputType = schema($(inputCol)).dataType
     val metadata = outputSchema($(outputCol)).metadata
+
+    val addOneIfZero = udf { in: Double => if (in == 0) 1.0 else in }
+
     getLogType match {
       case "natural" => {
-        dataset.select(col("*"), (functions.log($(inputCol)).as($(outputCol), metadata)))
+        dataset.select(col("*"), functions.log(addOneIfZero(col($(inputCol)))).as($(outputCol), metadata))
       }
       case "log10" => {
-        dataset.select(col("*"), (functions.log10($(inputCol)).as($(outputCol), metadata)))
+        dataset.select(col("*"), functions.log10(addOneIfZero(col($(inputCol)))).as($(outputCol), metadata))
       }
       case "log2" => {
-        dataset.select(col("*"), (functions.log2($(inputCol)).as($(outputCol), metadata)))
+        dataset.select(col("*"), functions.log2(addOneIfZero(col($(inputCol)))).as($(outputCol), metadata))
       }
     }
   }

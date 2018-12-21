@@ -45,6 +45,7 @@
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-core_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>javax.servlet</groupId>
@@ -57,24 +58,28 @@
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-sql_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
+      <scope>provided</scope>
     </dependency>
     <!-- https://mvnrepository.com/artifact/com.databricks/spark-csv_2.11 -->
     <dependency>
       <groupId>com.databricks</groupId>
       <artifactId>spark-csv_${scala.binary.version}</artifactId>
       <version>${spark.csv.version}</version>
+      <scope>provided</scope>
     </dependency>
     <!-- https://mvnrepository.com/artifact/com.databricks/spark-avro_2.11 -->
     <dependency>
       <groupId>com.databricks</groupId>
       <artifactId>spark-avro_${scala.binary.version}</artifactId>
       <version>${spark.avro.version}</version>
+      <scope>provided</scope>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-mllib -->
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-mllib_2.11</artifactId>
       <version>${spark.mllib.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -87,6 +92,7 @@
       <groupId>org.json4s</groupId>
       <artifactId>json4s-jackson_${scala.binary.version}</artifactId>
       <version>${json.jackson.version}</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 </project>

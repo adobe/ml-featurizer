@@ -74,6 +74,12 @@ class MathFeaturizer(override val uid: String)
       case "log2" => {
         dataset.select(col("*"), (functions.log2($(inputCol)).as($(outputCol), metadata)))
       }
+      case "square" => {
+        dataset.select(col("*"), (functions.pow($(inputCol),2).as($(outputCol), metadata)))
+      }
+      case "exp" => {
+        dataset.select(col("*"), (functions.exp($(inputCol)).as($(outputCol), metadata)))
+      }
     }
   }
 

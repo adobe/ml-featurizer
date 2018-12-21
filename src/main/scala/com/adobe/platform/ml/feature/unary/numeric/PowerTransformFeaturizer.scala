@@ -25,10 +25,9 @@ import org.apache.spark.sql.types.{IntegerType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Dataset, functions}
 
 private[feature] trait PowerTransformFeaturizerParams extends Params with HasInputCol with HasOutputCol {
+  final val powerType: Param[String] = new Param(this, "powerType", s"Power function type.")
 
-  final val powerType: Param[Int] = new Param(this, "powerType", s"Power function type.")
-
-  def getPowerType: Int = $(powerType)
+  def getPowerType: String = $(powerType)
 
   /** Validates and transforms the input schema. */
   protected def validateAndTransformSchema(schema: StructType): StructType = {
@@ -48,9 +47,9 @@ class PowerTransformFeaturizer(override val uid: String)
 
   def setOutputCol(value: String): this.type = set(outputCol, value)
 
-  def setPowerType(value: Int): this.type = set(powerType, value)
+  def setPowerType(value: String): this.type = set(powerType, value)
 
-  setDefault(powerType -> 2)
+  setDefault(powerType -> "2")
 
   override def transform(dataset: Dataset[_]): DataFrame = {
     transformSchema(dataset.schema, logging = true)
@@ -58,7 +57,7 @@ class PowerTransformFeaturizer(override val uid: String)
     val schema = dataset.schema
     val inputType = schema($(inputCol)).dataType
     val metadata = outputSchema($(outputCol)).metadata
-    dataset.select(col("*"), (functions.pow($(inputCol), getPowerType).as($(outputCol), metadata)))
+    dataset.select(col("*"), (functions.pow($(inputCol), getPowerType.toInt).as($(outputCol), metadata)))
   }
 
   override def transformSchema(schema: StructType): StructType = {
