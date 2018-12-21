@@ -22,7 +22,7 @@ import org.apache.spark.ml.param.{ParamMap, Params}
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, Dataset}
+import org.apache.spark.sql.{Column, DataFrame, Dataset}
 
 private[feature] trait ConcateColumnsFeaturizerParams extends Params with HasInputCols with HasOutputCol {
   /** Validates and transforms the input schema. */
@@ -30,12 +30,13 @@ private[feature] trait ConcateColumnsFeaturizerParams extends Params with HasInp
     require(get(inputCols).isDefined, "Input cols must be defined first.")
     require(get(outputCol).isDefined, "Output col must be defined first.")
     val inputColsLength = $(inputCols).length
-    require(inputColsLength > 0 && inputColsLength < 3, "Input cols must have non-zero length.")
+    require(inputColsLength > 0, "Input cols must have non-zero length.")
+
     require($(inputCols).distinct.length == $(inputCols).length, "Input cols must be distinct.")
 
     require(!schema.fieldNames.contains($(outputCol)),
       s"Output column ${$(outputCol)} already exists.")
-    val outputFields = schema.fields :+ StructField($(outputCol), DoubleType, false)
+    val outputFields = schema.fields :+ StructField($(outputCol), StringType, false)
     StructType(outputFields)
   }
 }
@@ -57,7 +58,12 @@ class ConcateColumnsFeaturizer(override val uid: String)
     val outputSchema = transformSchema(dataset.schema, logging = true)
     val schema = dataset.schema
     val metadata = outputSchema($(outputCol)).metadata
-    dataset.select(col("*"), (concat(col(getInputCols(0)), lit(","), col(getInputCols(1)))).as($(outputCol), metadata))
+    dataset.select(col("*"), (concat_ws(",", toCols(getInputCols):_*)).as($(outputCol), metadata))
+
+  }
+
+  def toCols(columns:Array[String]):Seq[Column] = {
+    columns.map(col=> new Column(col))
   }
 
   override def transformSchema(schema: StructType): StructType = {
