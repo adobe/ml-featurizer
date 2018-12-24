@@ -19,15 +19,16 @@ package com.adobe.platform.ml.feature.unary.numeric
 import com.adobe.platform.ml.feature.util.{HasInputCol, HasOutputCol}
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.{Param, ParamMap, Params}
+import org.apache.spark.ml.param.IntParam
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types.{IntegerType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Dataset, functions}
 
 private[feature] trait PowerTransformFeaturizerParams extends Params with HasInputCol with HasOutputCol {
-  final val powerType: Param[String] = new Param(this, "powerType", s"Power function type.")
+  val powerType: IntParam = new IntParam(this, "powerType", "Power function type")
 
-  def getPowerType: String = $(powerType)
+  def getPowerType: Int = $(powerType)
 
   /** Validates and transforms the input schema. */
   protected def validateAndTransformSchema(schema: StructType): StructType = {
@@ -42,14 +43,13 @@ class PowerTransformFeaturizer(override val uid: String)
   extends Transformer with PowerTransformFeaturizerParams with DefaultParamsWritable {
 
   def this() = this(Identifiable.randomUID("powerTransformFeaturizer"))
+  setDefault(powerType -> 2)
 
   def setInputCol(value: String): this.type = set(inputCol, value)
 
   def setOutputCol(value: String): this.type = set(outputCol, value)
 
-  def setPowerType(value: String): this.type = set(powerType, value)
-
-  setDefault(powerType -> "2")
+  def setPowerType(value: Int): this.type = set(powerType, value)
 
   override def transform(dataset: Dataset[_]): DataFrame = {
     transformSchema(dataset.schema, logging = true)
