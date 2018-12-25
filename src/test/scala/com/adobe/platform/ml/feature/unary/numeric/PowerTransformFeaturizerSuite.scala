@@ -27,8 +27,8 @@ class PowerTransformFeaturizerSuite extends MLTest with DefaultReadWriteTest {
   import testImplicits._
 
   def assertResult: Row => Unit = {
-    case Row(originalValue:Double, transformedValue:Double) =>
-      assert(originalValue ~== transformedValue absTol 1E-5,
+    case Row(transformedValue:Double, expectedValue:Double) =>
+      assert(transformedValue ~== expectedValue absTol 1E-5,
         "The transformed value is not correct after power transform.")
   }
 
