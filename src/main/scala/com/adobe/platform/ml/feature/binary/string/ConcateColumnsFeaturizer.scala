@@ -18,13 +18,17 @@ package com.adobe.platform.ml.feature.binary.string
 
 import com.adobe.platform.ml.feature.util.{HasInputCols, HasOutputCol}
 import org.apache.spark.ml.Transformer
-import org.apache.spark.ml.param.{ParamMap, Params}
+import org.apache.spark.ml.param.{Param, ParamMap, Params}
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, DataFrame, Dataset}
 
 private[feature] trait ConcateColumnsFeaturizerParams extends Params with HasInputCols with HasOutputCol {
+  final val delimiter: Param[String] = new Param(this, "delimiter", s"Delimiter between tokens.")
+
+  def getDelimiter: String = $(delimiter)
+
   /** Validates and transforms the input schema. */
   protected def validateAndTransformSchema(schema: StructType): StructType = {
     require(get(inputCols).isDefined, "Input cols must be defined first.")
@@ -52,13 +56,17 @@ class ConcateColumnsFeaturizer(override val uid: String)
 
   def setOutputCol(value: String): this.type = set(outputCol, value)
 
+  def setDelimiter(value: String): this.type = set(delimiter, value)
+
+  setDefault(delimiter -> ",")
+
 
   override def transform(dataset: Dataset[_]): DataFrame = {
     transformSchema(dataset.schema, logging = true)
     val outputSchema = transformSchema(dataset.schema, logging = true)
     val schema = dataset.schema
     val metadata = outputSchema($(outputCol)).metadata
-    dataset.select(col("*"), (concat_ws(",", toCols(getInputCols):_*)).as($(outputCol), metadata))
+    dataset.select(col("*"), (concat_ws(getDelimiter, toCols(getInputCols):_*)).as($(outputCol), metadata))
 
   }
 
