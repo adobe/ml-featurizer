@@ -17,10 +17,11 @@
 package com.adobe.platform.ml.feature.unary.temporal
 
 import java.sql.Timestamp
-import java.text.SimpleDateFormat
-import java.util.Calendar
+import java.time.{ZonedDateTime, LocalDateTime, ZoneId}
+import java.time.format.DateTimeFormatterBuilder
+import java.time.temporal.ChronoField
 
-import com.adobe.platform.ml.feature.util.{HasInputCol, HasOutputCol}
+import com.adobe.platform.ml.feature.util.{TemporalFeaturizerUtils, HasInputCol, HasOutputCol}
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.{Param, ParamMap, Params}
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
@@ -29,11 +30,12 @@ import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Dataset}
 
 private[feature] trait HourOfDayFeaturizerParams extends Params with HasInputCol with HasOutputCol {
-
   final val format: Param[String] = new Param(this, "format", s"Date time format.")
+  final val timezone: Param[String] = new Param(this, "timezone", s"Timezone used.")
 
   /** @group getParam */
   def getFormat: String = $(format)
+  def getTimezone: String = $(timezone)
 
   /** Validates and transforms the input schema. */
   protected def validateAndTransformSchema(schema: StructType): StructType = {
@@ -55,30 +57,39 @@ class HourOfDayFeaturizer(override val uid: String)
 
   def setFormat(value: String): this.type = set(format, value)
 
-  setDefault(format -> "yyyy-MM-dd HH:mm:ss")
-  val formatter = new SimpleDateFormat(getFormat)
+  def setTimezone(value: String): this.type = set(timezone, value)
+
+  setDefault(format -> "yyyy-MM-dd HH:mm:ss", timezone -> ZoneId.systemDefault().getId)
+
+  val includedFormats = Set("uuuu-MM-dd HH:mm:ss","uuuu-MM-dd")
 
   override def transform(dataset: Dataset[_]): DataFrame = {
     transformSchema(dataset.schema, logging = true)
     val outputSchema = transformSchema(dataset.schema, logging = true)
     val schema = dataset.schema
     val inputType = schema($(inputCol)).dataType
+    val updatedFormats =  TemporalFeaturizerUtils.updateFormats(includedFormats, getFormat)
+
+    val formatter = new DateTimeFormatterBuilder()
+      .appendPattern(updatedFormats)
+      .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
+      .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
+      .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
+      .toFormatter()
+      .withZone(ZoneId.of(getTimezone))
 
     val toHourOfDayString = udf {
       in: String => {
-        val date = formatter.parse(in)
-        val calendar = Calendar.getInstance
-        calendar.setTime(date)
-        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        val date = LocalDateTime.parse(in, formatter)
+        val  zonedDateTime = ZonedDateTime.of(date, ZoneId.of(getTimezone))
+        val hour = zonedDateTime.getHour
         hour
       }
     }
 
     val toHourOfDayTimestamp = udf {
       in: Timestamp => {
-        val calendar = Calendar.getInstance
-        calendar.setTime(in)
-        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        val hour = in.toLocalDateTime().getHour()
         hour
       }
     }
