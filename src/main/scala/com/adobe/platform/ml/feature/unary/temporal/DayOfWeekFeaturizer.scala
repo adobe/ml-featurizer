@@ -21,7 +21,7 @@ import java.time._
 import java.time.format.{DateTimeFormatterBuilder, DateTimeFormatter}
 import java.time.temporal.ChronoField
 
-import com.adobe.platform.ml.feature.util.{TemporalFeaturizerUtils, HasInputCol, HasOutputCol}
+import com.adobe.platform.ml.feature.util.{HasInputCol, HasOutputCol}
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.{Param, ParamMap, Params}
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
