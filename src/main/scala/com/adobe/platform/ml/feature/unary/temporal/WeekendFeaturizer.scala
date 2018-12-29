@@ -18,9 +18,12 @@ package com.adobe.platform.ml.feature.unary.temporal
 
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
+import java.time.{ZonedDateTime, LocalDateTime, ZoneId}
+import java.time.format.DateTimeFormatterBuilder
+import java.time.temporal.ChronoField
 import java.util.Calendar
 
-import com.adobe.platform.ml.feature.util.{HasInputCol, HasOutputCol}
+import com.adobe.platform.ml.feature.util.{TemporalFeaturizerUtils, HasInputCol, HasOutputCol}
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.{Param, ParamMap, Params}
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
@@ -30,8 +33,11 @@ import org.apache.spark.sql.{DataFrame, Dataset}
 
 private[feature] trait WeekendFeaturizerParams extends Params with HasInputCol with HasOutputCol {
   final val format: Param[String] = new Param(this, "format", s"Date time format.")
+  final val timezone: Param[String] = new Param(this, "timezone", s"Timezone used.")
 
+  /** @group getParam */
   def getFormat: String = $(format)
+  def getTimezone: String = $(timezone)
 
   /** Validates and transforms the input schema. */
   protected def validateAndTransformSchema(schema: StructType): StructType = {
@@ -53,8 +59,9 @@ class WeekendFeaturizer(override val uid: String)
 
   def setFormat(value: String): this.type = set(format, value)
 
-  setDefault(format -> "yyyy-MM-dd")
-  val formatter = new SimpleDateFormat(getFormat)
+  def setTimezone(value: String): this.type = set(timezone, value)
+
+  setDefault(format -> "yyyy-MM-dd", timezone -> ZoneId.systemDefault().getId)
 
   override def transform(dataset: Dataset[_]): DataFrame = {
     transformSchema(dataset.schema, logging = true)
@@ -62,14 +69,21 @@ class WeekendFeaturizer(override val uid: String)
     val schema = dataset.schema
     val inputType = schema($(inputCol)).dataType
 
+    val formatter = new DateTimeFormatterBuilder()
+      .appendPattern(getFormat)
+      .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
+      .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
+      .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
+      .toFormatter()
+      .withZone(ZoneId.of(getTimezone))
+
     val isWeekendString = udf {
       in: String => {
-        val date = formatter.parse(in)
-        val calendar = Calendar.getInstance
-        calendar.setTime(date)
-        val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+        val date = LocalDateTime.parse(in, formatter)
+        val  zonedDateTime = ZonedDateTime.of(date, ZoneId.of(getTimezone))
+        val dayOfWeek = zonedDateTime.getDayOfWeek.getValue
         dayOfWeek match {
-          case 1 | 7 => 1
+          case 6 | 7 => 1
           case _ => 0
         }
       }
@@ -77,11 +91,9 @@ class WeekendFeaturizer(override val uid: String)
 
     val isWeekendTimestamp = udf {
       in: Timestamp => {
-        val calendar = Calendar.getInstance
-        calendar.setTime(in)
-        val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+        val dayOfWeek = in.toLocalDateTime().toLocalDate().getDayOfWeek.getValue
         dayOfWeek match {
-          case 1 | 7 => 1
+          case 6 | 7 => 1
           case _ => 0
         }
       }

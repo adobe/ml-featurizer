@@ -61,17 +61,14 @@ class HourOfDayFeaturizer(override val uid: String)
 
   setDefault(format -> "yyyy-MM-dd HH:mm:ss", timezone -> ZoneId.systemDefault().getId)
 
-  val includedFormats = Set("uuuu-MM-dd HH:mm:ss","uuuu-MM-dd")
-
   override def transform(dataset: Dataset[_]): DataFrame = {
     transformSchema(dataset.schema, logging = true)
     val outputSchema = transformSchema(dataset.schema, logging = true)
     val schema = dataset.schema
     val inputType = schema($(inputCol)).dataType
-    val updatedFormats =  TemporalFeaturizerUtils.updateFormats(includedFormats, getFormat)
 
     val formatter = new DateTimeFormatterBuilder()
-      .appendPattern(updatedFormats)
+      .appendPattern(getFormat)
       .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
       .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
       .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
