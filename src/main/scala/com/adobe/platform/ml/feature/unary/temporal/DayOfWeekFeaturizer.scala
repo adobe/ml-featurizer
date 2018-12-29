@@ -21,7 +21,7 @@ import java.time._
 import java.time.format.{DateTimeFormatterBuilder, DateTimeFormatter}
 import java.time.temporal.ChronoField
 
-import com.adobe.platform.ml.feature.util.{TemporalFeaturizerUtils, HasInputCol, HasOutputCol}
+import com.adobe.platform.ml.feature.util.{HasInputCol, HasOutputCol}
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.{Param, ParamMap, Params}
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
@@ -66,16 +66,14 @@ class DayOfWeekFeaturizer(override val uid: String)
   def setTimezone(value: String): this.type = set(timezone, value)
 
   setDefault(format -> "yyyy-MM-dd", timezone -> ZoneId.systemDefault().getId)
-  val includedFormats = Set("uuuu-MM-dd HH:mm:ss","uuuu-MM-dd")
 
   override def transform(dataset: Dataset[_]): DataFrame = {
     val outputSchema = transformSchema(dataset.schema, logging = true)
     val schema = dataset.schema
     val inputType = schema($(inputCol)).dataType
-    val updatedFormats =  TemporalFeaturizerUtils.updateFormats(includedFormats, getFormat)
 
     val formatter = new DateTimeFormatterBuilder()
-      .appendPattern(updatedFormats)
+      .appendPattern(getFormat)
       .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
       .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
       .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
