@@ -25,7 +25,7 @@ It extends and enriches the existing [Spark's feature engineering functionality]
   5. Binary String Featurizers
       * ConcateColumnsFeaturizer
   6. Grouping Featurizers
-      * GroupByFeaturizer (min, max, count, avg, sum)
+      * GroupByFeaturizer (count, ratio, min, max, count, avg, sum)
 
 #### Examples:
 ##### Create day of week feature
