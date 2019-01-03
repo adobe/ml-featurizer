@@ -41,5 +41,41 @@ object GroupByFeaturizerExample {
 
     var featurizedDataFrame = groupBySumFeaturizer.transform(dataFrame)
     featurizedDataFrame.show()
+
+    val groupByMinFeaturizer = new GroupByFeaturizer()
+      .setInputCol("id")
+      .setAggregateCol("spent")
+      .setOutputCol("totalSpent")
+      .setAggregateType("min")
+
+    featurizedDataFrame = groupByMinFeaturizer.transform(dataFrame)
+    featurizedDataFrame.show()
+
+    val groupByMaxFeaturizer = new GroupByFeaturizer()
+      .setInputCol("id")
+      .setAggregateCol("spent")
+      .setOutputCol("totalSpent")
+      .setAggregateType("max")
+
+    featurizedDataFrame = groupByMaxFeaturizer.transform(dataFrame)
+    featurizedDataFrame.show()
+
+    val groupByAvgFeaturizer = new GroupByFeaturizer()
+      .setInputCol("id")
+      .setAggregateCol("spent")
+      .setOutputCol("totalSpent")
+      .setAggregateType("avg")
+
+    featurizedDataFrame = groupByAvgFeaturizer.transform(dataFrame)
+    featurizedDataFrame.show()
+
+    val groupByRatioFeaturizer = new GroupByFeaturizer()
+      .setInputCol("id")
+      .setAggregateCol("spent")
+      .setOutputCol("totalSpent")
+      .setAggregateType("ratio")
+
+    featurizedDataFrame = groupByRatioFeaturizer.transform(dataFrame)
+    featurizedDataFrame.show()
   }
 }
