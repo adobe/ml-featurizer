@@ -67,16 +67,16 @@ class HourOfDayFeaturizer(override val uid: String)
     val schema = dataset.schema
     val inputType = schema($(inputCol)).dataType
 
-    val formatter = new DateTimeFormatterBuilder()
-      .appendPattern(getFormat)
-      .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
-      .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
-      .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
-      .toFormatter()
-      .withZone(ZoneId.of(getTimezone))
-
     val toHourOfDayString = udf {
       in: String => {
+        val formatter = new DateTimeFormatterBuilder()
+          .appendPattern(getFormat)
+          .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
+          .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
+          .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
+          .toFormatter()
+          .withZone(ZoneId.of(getTimezone))
+
         val date = LocalDateTime.parse(in, formatter)
         val  zonedDateTime = ZonedDateTime.of(date, ZoneId.of(getTimezone))
         val hour = zonedDateTime.getHour
