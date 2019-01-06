@@ -1,0 +1,3 @@
+setuptools
+numpy
+pyspark>=2.3.1

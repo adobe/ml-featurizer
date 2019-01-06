@@ -59,21 +59,13 @@ class PartsOfDayFeaturizer(override val uid: String)
 
   def setTimezone(value: String): this.type = set(timezone, value)
 
-  setDefault(format -> "yyyy-MM-dd", timezone -> ZoneId.systemDefault().getId)
+  setDefault(format -> "yyyy-MM-dd HH:mm:ss", timezone -> ZoneId.systemDefault().getId)
 
   override def transform(dataset: Dataset[_]): DataFrame = {
     transformSchema(dataset.schema, logging = true)
     val outputSchema = transformSchema(dataset.schema, logging = true)
     val schema = dataset.schema
     val inputType = schema($(inputCol)).dataType
-
-    val formatter = new DateTimeFormatterBuilder()
-      .appendPattern(getFormat)
-      .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
-      .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
-      .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
-      .toFormatter()
-      .withZone(ZoneId.of(getTimezone))
 
     def toPartOfDay(in: Int) : Int = {
       val output = in match {
@@ -89,6 +81,14 @@ class PartsOfDayFeaturizer(override val uid: String)
 
     val toPartOfDayString = udf {
       in: String => {
+        val formatter = new DateTimeFormatterBuilder()
+          .appendPattern(getFormat)
+          .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
+          .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
+          .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
+          .toFormatter()
+          .withZone(ZoneId.of(getTimezone))
+
         val date = LocalDateTime.parse(in, formatter)
         val  zonedDateTime = ZonedDateTime.of(date, ZoneId.of(getTimezone))
         val hour = zonedDateTime.getHour
