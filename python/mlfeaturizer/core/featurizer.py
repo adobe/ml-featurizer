@@ -1,5 +1,5 @@
 from pyspark.ml import feature, Pipeline
-from pyspark import since, keyword_only, SparkContext
+from pyspark import keyword_only, SparkContext
 from pyspark.rdd import ignore_unicode_prefix
 from pyspark.ml.linalg import _convert_to_vector
 from pyspark.ml.param.shared import *
@@ -8,10 +8,11 @@ from pyspark.ml.wrapper import JavaEstimator, JavaModel, JavaParams, JavaTransfo
 from pyspark.ml.common import inherit_doc
 
 __all__ = ['LogTransformFeaturizer', 'PowerTransformFeaturizer',
-           'DayOfWeekFeaturizer', 'HourOfDayFeaturizer',
+           'MathFeaturizer', 'DayOfWeekFeaturizer', 'HourOfDayFeaturizer',
            'MonthOfYearFeaturizer', 'PartsOfDayFeaturizer',
            'AdditionFeaturizer', 'SubtractionFeaturizer',
-           'MultiplicationFeaturizer', 'DivisionFeaturizer']
+           'MultiplicationFeaturizer', 'DivisionFeaturizer',
+           'GroupByFeaturizer']
 
 @inherit_doc
 class LogTransformFeaturizer(JavaTransformer, HasInputCol, HasOutputCol,
@@ -38,7 +39,6 @@ class LogTransformFeaturizer(JavaTransformer, HasInputCol, HasOutputCol,
         self.setParams(**kwargs)
 
     @keyword_only
-    @since("1.4.0")
     def setParams(self, inputCol=None, outputCol=None, logType="natural"):
         """
         setParams(self, inputCol=None, outputCol=None, logType="natural")
@@ -47,14 +47,12 @@ class LogTransformFeaturizer(JavaTransformer, HasInputCol, HasOutputCol,
         kwargs = self._input_kwargs
         return self._set(**kwargs)
 
-    @since("1.4.0")
     def setLogType(self, value):
         """
         Sets the value of :py:attr:`logType`.
         """
         return self._set(logType=value)
 
-    @since("1.4.0")
     def getLogType(self):
         """
         Gets the value of logType or its default value.
@@ -85,7 +83,6 @@ class PowerTransformFeaturizer(JavaTransformer, HasInputCol, HasOutputCol,
         self.setParams(**kwargs)
 
     @keyword_only
-    @since("1.4.0")
     def setParams(self, inputCol=None, outputCol=None, powerType=2):
         """
         setParams(self, inputCol=None, outputCol=None, powerType=2)
@@ -94,19 +91,62 @@ class PowerTransformFeaturizer(JavaTransformer, HasInputCol, HasOutputCol,
         kwargs = self._input_kwargs
         return self._set(**kwargs)
 
-    @since("1.4.0")
     def setPowerType(self, value):
         """
         Sets the value of :py:attr:`powerType`.
         """
         return self._set(powerType=value)
 
-    @since("1.4.0")
     def getPowerType(self):
         """
-        Gets the value of logType or its default value.
+        Gets the value of powerType or its default value.
         """
         return self.getOrDefault(self.powerType)
+
+
+@inherit_doc
+class MathFeaturizer(JavaTransformer, HasInputCol, HasOutputCol,
+                 JavaMLReadable, JavaMLWritable):
+    """
+    Perform Math Function Transformation on column.
+    """
+
+    mathFunction = Param(Params._dummy(), "mathFunction", "math function to be used. " +
+                          "Default is sqrt",
+                          typeConverter=TypeConverters.toString)
+
+    @keyword_only
+    def __init__(self, inputCol=None, outputCol=None, mathFunction="sqrt"):
+        """
+        __init__(self, inputCol=None, outputCol=None, mathFunction="sqrt")
+        """
+        super(MathFeaturizer, self).__init__()
+        self._java_obj = self._new_java_obj("com.adobe.platform.ml.feature.unary.numeric.MathFeaturizer",
+                                            self.uid)
+        self._setDefault(mathFunction="sqrt")
+        kwargs = self._input_kwargs
+        self.setParams(**kwargs)
+
+    @keyword_only
+    def setParams(self, inputCol=None, outputCol=None, mathFunction="sqrt"):
+        """
+        setParams(self, inputCol=None, outputCol=None, mathFunction="sqrt")
+        Sets params for this MathFeaturizer.
+        """
+        kwargs = self._input_kwargs
+        return self._set(**kwargs)
+
+    def setMathFunction(self, value):
+        """
+        Sets the value of :py:attr:`mathFunction`.
+        """
+        return self._set(mathFunction=value)
+
+    def getMathFunction(self):
+        """
+        Gets the value of mathFunction or its default value.
+        """
+        return self.getOrDefault(self.mathFunction)
 
 
 @inherit_doc
@@ -134,7 +174,6 @@ class DayOfWeekFeaturizer(JavaTransformer, HasInputCol, HasOutputCol,
         self.setParams(**kwargs)
 
     @keyword_only
-    @since("1.4.0")
     def setParams(self, inputCol=None, outputCol=None, format="yyyy-MM-dd", timezone="UTC"):
         """
         setParams(self, inputCol=None, outputCol=None, format="yyyy-MM-dd", timezone="UTC")
@@ -143,28 +182,24 @@ class DayOfWeekFeaturizer(JavaTransformer, HasInputCol, HasOutputCol,
         kwargs = self._input_kwargs
         return self._set(**kwargs)
 
-    @since("1.4.0")
     def setFormat(self, value):
         """
         Sets the value of :py:attr:`format`.
         """
         return self._set(format=value)
 
-    @since("1.4.0")
     def getFormat(self):
         """
         Gets the value of format or its default value.
         """
         return self.getOrDefault(self.format)
 
-    @since("1.4.0")
     def setTimezone(self, value):
         """
         Sets the value of :py:attr:`timezone`.
         """
         return self._set(timezone=value)
 
-    @since("1.4.0")
     def getTimezone(self):
         """
         Gets the value of timezone or its default value.
@@ -197,7 +232,6 @@ class HourOfDayFeaturizer(JavaTransformer, HasInputCol, HasOutputCol,
         self.setParams(**kwargs)
 
     @keyword_only
-    @since("1.4.0")
     def setParams(self, inputCol=None, outputCol=None, format="yyyy-MM-dd HH:mm:ss", timezone="UTC"):
         """
         setParams(self, inputCol=None, outputCol=None, format="yyyy-MM-dd HH:mm:ss", timezone="UTC")
@@ -206,28 +240,24 @@ class HourOfDayFeaturizer(JavaTransformer, HasInputCol, HasOutputCol,
         kwargs = self._input_kwargs
         return self._set(**kwargs)
 
-    @since("1.4.0")
     def setFormat(self, value):
         """
         Sets the value of :py:attr:`format`.
         """
         return self._set(format=value)
 
-    @since("1.4.0")
     def getFormat(self):
         """
         Gets the value of format or its default value.
         """
         return self.getOrDefault(self.format)
 
-    @since("1.4.0")
     def setTimezone(self, value):
         """
         Sets the value of :py:attr:`timezone`.
         """
         return self._set(timezone=value)
 
-    @since("1.4.0")
     def getTimezone(self):
         """
         Gets the value of timezone or its default value.
@@ -259,7 +289,6 @@ class MonthOfYearFeaturizer(JavaTransformer, HasInputCol, HasOutputCol,
         self.setParams(**kwargs)
 
     @keyword_only
-    @since("1.4.0")
     def setParams(self, inputCol=None, outputCol=None, format="yyyy-MM-dd", timezone="UTC"):
         """
         setParams(self, inputCol=None, outputCol=None, format="yyyy-MM-dd", timezone="UTC")
@@ -268,28 +297,24 @@ class MonthOfYearFeaturizer(JavaTransformer, HasInputCol, HasOutputCol,
         kwargs = self._input_kwargs
         return self._set(**kwargs)
 
-    @since("1.4.0")
     def setFormat(self, value):
         """
         Sets the value of :py:attr:`format`.
         """
         return self._set(format=value)
 
-    @since("1.4.0")
     def getFormat(self):
         """
         Gets the value of format or its default value.
         """
         return self.getOrDefault(self.format)
 
-    @since("1.4.0")
     def setTimezone(self, value):
         """
         Sets the value of :py:attr:`timezone`.
         """
         return self._set(timezone=value)
 
-    @since("1.4.0")
     def getTimezone(self):
         """
         Gets the value of timezone or its default value.
@@ -321,7 +346,6 @@ class PartsOfDayFeaturizer(JavaTransformer, HasInputCol, HasOutputCol,
         self.setParams(**kwargs)
 
     @keyword_only
-    @since("1.4.0")
     def setParams(self, inputCol=None, outputCol=None, format="yyyy-MM-dd HH:mm:ss", timezone="UTC"):
         """
         setParams(self, inputCol=None, outputCol=None, format="yyyy-MM-dd HH:mm:ss", timezone="UTC")
@@ -330,28 +354,24 @@ class PartsOfDayFeaturizer(JavaTransformer, HasInputCol, HasOutputCol,
         kwargs = self._input_kwargs
         return self._set(**kwargs)
 
-    @since("1.4.0")
     def setFormat(self, value):
         """
         Sets the value of :py:attr:`format`.
         """
         return self._set(format=value)
 
-    @since("1.4.0")
     def getFormat(self):
         """
         Gets the value of format or its default value.
         """
         return self.getOrDefault(self.format)
 
-    @since("1.4.0")
     def setTimezone(self, value):
         """
         Sets the value of :py:attr:`timezone`.
         """
         return self._set(timezone=value)
 
-    @since("1.4.0")
     def getTimezone(self):
         """
         Gets the value of timezone or its default value.
@@ -377,7 +397,6 @@ class AdditionFeaturizer(JavaTransformer, HasInputCols, HasOutputCol,
         self.setParams(**kwargs)
 
     @keyword_only
-    @since("1.4.0")
     def setParams(self, inputCols=None, outputCol=None):
         """
         setParams(self, inputCols=None, outputCol=None)
@@ -405,7 +424,6 @@ class SubtractionFeaturizer(JavaTransformer, HasInputCols, HasOutputCol,
         self.setParams(**kwargs)
 
     @keyword_only
-    @since("1.4.0")
     def setParams(self, inputCols=None, outputCol=None):
         """
         setParams(self, inputCols=None, outputCol=None)
@@ -433,7 +451,6 @@ class MultiplicationFeaturizer(JavaTransformer, HasInputCols, HasOutputCol,
         self.setParams(**kwargs)
 
     @keyword_only
-    @since("1.4.0")
     def setParams(self, inputCols=None, outputCol=None):
         """
         setParams(self, inputCols=None, outputCol=None)
@@ -461,7 +478,6 @@ class DivisionFeaturizer(JavaTransformer, HasInputCols, HasOutputCol,
         self.setParams(**kwargs)
 
     @keyword_only
-    @since("1.4.0")
     def setParams(self, inputCols=None, outputCol=None):
         """
         setParams(self, inputCols=None, outputCol=None)
@@ -469,3 +485,63 @@ class DivisionFeaturizer(JavaTransformer, HasInputCols, HasOutputCol,
         """
         kwargs = self._input_kwargs
         return self._set(**kwargs)
+
+
+@inherit_doc
+class GroupByFeaturizer(JavaTransformer, HasInputCol, HasOutputCol,
+                 JavaMLReadable, JavaMLWritable):
+    """
+    Perform Group By Transformation.
+    """
+
+    aggregateType = Param(Params._dummy(), "aggregateType", "aggregate type to be used. " +
+                          "Default is count",
+                          typeConverter=TypeConverters.toString)
+
+    aggregateCol = Param(Params._dummy(), "aggregateCol", "aggregate column to be used. ",
+                          typeConverter=TypeConverters.toString)
+
+    @keyword_only
+    def __init__(self, inputCol=None, outputCol=None, aggregateType="count", aggregateCol=None):
+        """
+        __init__(self, inputCol=None, outputCol=None, aggregateType="count", aggregateCol=None)
+        """
+        super(GroupByFeaturizer, self).__init__()
+        self._java_obj = self._new_java_obj("com.adobe.platform.ml.feature.group.GroupByFeaturizer",
+                                            self.uid)
+        self._setDefault(aggregateType="count")
+        kwargs = self._input_kwargs
+        self.setParams(**kwargs)
+
+    @keyword_only
+    def setParams(self, inputCol=None, outputCol=None, aggregateType="count", aggregateCol=None):
+        """
+        setParams(self, inputCol=None, outputCol=None, aggregateType="count", aggregateCol=None)
+        Sets params for this GroupByFeaturizer.
+        """
+        kwargs = self._input_kwargs
+        return self._set(**kwargs)
+
+    def setAggregateType(self, value):
+        """
+        Sets the value of :py:attr:`aggregateType`.
+        """
+        return self._set(aggregateType=value)
+
+    def getAggregateType(self):
+        """
+        Gets the value of aggregateType or its default value.
+        """
+        return self.getOrDefault(self.aggregateType)
+
+    def setAggregateCol(self, value):
+        """
+        Sets the value of :py:attr:`aggregateCol`.
+        """
+        return self._set(aggregateCol=value)
+
+    def getAggregateCol(self):
+        """
+        Gets the value of aggregateCol or its default value.
+        """
+        return self.getOrDefault(self.aggregateCol)
