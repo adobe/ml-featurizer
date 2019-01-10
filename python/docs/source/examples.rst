@@ -264,8 +264,8 @@ Group by Average
    groupByFeaturizer.transform(data).show() 
 
 
- Group by Count
-^^^^^^^^^^^^^^^
+Group by Count
+^^^^^^^^^^^^^^
 
 .. code:: python3
 
