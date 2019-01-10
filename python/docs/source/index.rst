@@ -18,6 +18,7 @@ Contents:
 
    overview
    install
+   examples
    api
 
 Indices and tables

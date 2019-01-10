@@ -378,6 +378,65 @@ class PartsOfDayFeaturizer(JavaTransformer, HasInputCol, HasOutputCol,
         """
         return self.getOrDefault(self.timezone)
 
+
+@inherit_doc
+class WeekendFeaturizer(JavaTransformer, HasInputCol, HasOutputCol,
+                 JavaMLReadable, JavaMLWritable):
+    """
+    Check date time to see if it is on weekend or not.
+    """
+
+    format = Param(Params._dummy(), "format", "specify timestamp pattern. ",
+                          typeConverter=TypeConverters.toString)
+    timezone = Param(Params._dummy(), "timezone", "specify timezone. ",
+                   typeConverter=TypeConverters.toString)
+
+    @keyword_only
+    def __init__(self, inputCol=None, outputCol=None, format="yyyy-MM-dd", timezone="UTC"):
+        """
+        __init__(self, inputCol=None, outputCol=None, format="yyyy-MM-dd", timezone="UTC")
+        """
+        super(WeekendFeaturizer, self).__init__()
+        self._java_obj = self._new_java_obj("com.adobe.platform.ml.feature.unary.temporal.WeekendFeaturizer",
+                                            self.uid)
+        self._setDefault(format="yyyy-MM-dd", timezone="UTC")
+        kwargs = self._input_kwargs
+        self.setParams(**kwargs)
+
+    @keyword_only
+    def setParams(self, inputCol=None, outputCol=None, format="yyyy-MM-dd", timezone="UTC"):
+        """
+        setParams(self, inputCol=None, outputCol=None, format="yyyy-MM-dd", timezone="UTC")
+        Sets params for this WeekendFeaturizer.
+        """
+        kwargs = self._input_kwargs
+        return self._set(**kwargs)
+
+    def setFormat(self, value):
+        """
+        Sets the value of :py:attr:`format`.
+        """
+        return self._set(format=value)
+
+    def getFormat(self):
+        """
+        Gets the value of format or its default value.
+        """
+        return self.getOrDefault(self.format)
+
+    def setTimezone(self, value):
+        """
+        Sets the value of :py:attr:`timezone`.
+        """
+        return self._set(timezone=value)
+
+    def getTimezone(self):
+        """
+        Gets the value of timezone or its default value.
+        """
+        return self.getOrDefault(self.timezone)
+
+
 @inherit_doc
 class AdditionFeaturizer(JavaTransformer, HasInputCols, HasOutputCol,
                  JavaMLReadable, JavaMLWritable):
