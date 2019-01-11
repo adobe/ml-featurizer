@@ -1,3 +1,20 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 from pyspark.ml import feature, Pipeline
 from pyspark import keyword_only, SparkContext
 from pyspark.rdd import ignore_unicode_prefix
@@ -604,3 +621,49 @@ class GroupByFeaturizer(JavaTransformer, HasInputCol, HasOutputCol,
         Gets the value of aggregateCol or its default value.
         """
         return self.getOrDefault(self.aggregateCol)
+
+
+@inherit_doc
+class GeohashFeaturizer(JavaTransformer, HasInputCols, HasOutputCol,
+                 JavaMLReadable, JavaMLWritable):
+    """
+    Perform Geohash Transformation of latitude and longitude
+    """
+
+    precision = Param(Params._dummy(), "precision", "Precision level to be used. " +
+                          "Default precision level is 5",
+                          typeConverter=TypeConverters.toInt)
+
+    @keyword_only
+    def __init__(self, inputCols=None, outputCol=None, precision=5):
+        """
+        __init__(self, inputCols=None, outputCol=None, precision=5)
+        """
+        super(GeohashFeaturizer, self).__init__()
+        self._java_obj = self._new_java_obj("com.adobe.platform.ml.feature.geo.GeohashFeaturizer",
+                                            self.uid)
+        self._setDefault(precision=5)
+        kwargs = self._input_kwargs
+        self.setParams(**kwargs)
+
+    @keyword_only
+    def setParams(self, inputCols=None, outputCol=None, precision=5):
+        """
+        setParams(self, inputCols=None, outputCol=None, precision=5)
+        Sets params for this GeohashFeaturizer.
+        """
+        kwargs = self._input_kwargs
+        return self._set(**kwargs)
+
+    def setPrecision(self, value):
+        """
+        Sets the value of :py:attr:`precision`.
+        """
+        return self._set(precision=value)
+
+    def getPrecision(self):
+        """
+        Gets the value of precision or its default value.
+        """
+        return self.getOrDefault(self.precision)
+

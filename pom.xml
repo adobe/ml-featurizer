@@ -15,6 +15,7 @@
     <spark.avro.version>4.0.0</spark.avro.version>
     <spark.mllib.version>2.3.1</spark.mllib.version>
     <json.jackson.version>3.2.11</json.jackson.version>
+    <spatial4j.version>0.5</spatial4j.version>
     <junit.version>3.8.1</junit.version>
     <scalatest.version>3.0.3</scalatest.version>
     <scalacheck.version>1.13.5</scalacheck.version>
@@ -167,6 +168,12 @@
           <artifactId>servlet-api</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/com.spatial4j/spatial4j -->
+    <dependency>
+      <groupId>com.spatial4j</groupId>
+      <artifactId>spatial4j</artifactId>
+      <version>${spatial4j.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
