@@ -261,7 +261,7 @@ Group by Average
    (2, 30.0, '2015-05-01 23:05:00')], ["id", "amountSpent", "time"])
 
    groupByFeaturizer = fr.GroupByFeaturizer(inputCol='id', aggregateCol='amountSpent', aggregateType='avg', outputCol='avgByGroup')
-   groupByFeaturizer.transform(data).show() 
+   groupByFeaturizer.transform(data).show()
 
 
 Group by Count
@@ -279,5 +279,27 @@ Group by Count
    (2, 30.0, '2015-05-01 23:05:00')], ["id", "amountSpent", "time"])
 
    groupByFeaturizer = fr.GroupByFeaturizer(inputCol='id', aggregateCol='amountSpent', aggregateType='count', outputCol='countByGroup')
-   groupByFeaturizer.transform(data).show()     
+   groupByFeaturizer.transform(data).show()
+
+
+GEO Featurizer
+--------------
+
+Geohash
+^^^^^^^
+
+.. code:: python3
+
+   import mlfeaturizer.core.featurizer as fr
+   data = spark.createDataFrame([
+   (0, 37.788866, -122.39821, '2018-01-01 12:05:00'),
+   (0, 37.781555, -122.393990, '2018-01-03 15:15:00'),
+   (1, 37.791430, -122.401040, '2018-12-01 08:05:00'),
+   (1, 37.779510, -122.420220,'2018-12-02 20:15:00'),
+   (1, 37.751301, -122.434082,'2018-12-03 20:15:00'),
+   (2, 37.754130, -122.488820,'2015-05-01 23:05:00')], ["id", "lat", "lon", "time"])
+
+   geohashFeaturizer = fr.GeohashFeaturizer(inputCols=['lat','lon'], outputCol='geohash', precision=8)
+   geohashFeaturizer.transform(data).show()
+
 
