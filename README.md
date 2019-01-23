@@ -27,7 +27,8 @@ It extends and enriches the existing [Spark's feature engineering functionality]
   6. Grouping Featurizers
       * GroupByFeaturizer (count, ratio, min, max, count, avg, sum)
   7. GEO Featurizers
-      * GeohashFeaturizer
+      * GeohashFeaturizer (convert latitude and longitude into geohash)
+      
 #### Examples:
 ##### Create day of week feature
 ```scala
