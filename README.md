@@ -26,7 +26,8 @@ It extends and enriches the existing [Spark's feature engineering functionality]
       * ConcateColumnsFeaturizer
   6. Grouping Featurizers
       * GroupByFeaturizer (count, ratio, min, max, count, avg, sum)
-
+  7. GEO Featurizers
+      * GeohashFeaturizer
 #### Examples:
 ##### Create day of week feature
 ```scala
